@@ -1,5 +1,6 @@
 import tkinter as tk
 import tkinter.ttk as ttk
+from tkinter import filedialog
 import os
 
 root = tk.Tk()
@@ -7,29 +8,58 @@ root = tk.Tk()
 file = ttk.Frame(root)
 file.pack()
 
-file_select = ttk.Entry(file, width=49)
-file_select.pack(side="left")
+fileSelect = ttk.Entry(file, width=49)
+fileSelect.pack(side="left")
 
-def file_confirm():
-    print("placeholder")
+def loadFiles(filepath):
+    if filepath:
+        with open(filepath, "r") as f:
+            textContent = f.read()
+        textEditor.delete("1.0", tk.END)
+        textEditor.insert(tk.END, textContent)
+        setWindowTitle()
 
-file_confirm = ttk.Button(file, width=10, text="Select", command=file_confirm)
-file_confirm.pack(side="right")
+def openFileBrowser():
+    selectedDir = os.path.join(os.path.dirname(__file__), "txtDocs")
+    filepath = filedialog.askopenfilename(initialdir = selectedDir)
+    loadFiles(filepath)
 
-text_editor = tk.Text(root, height=16, width=60)
-text_editor.pack()
+fileBrowse = ttk.Button(file, width=10, text="Browse", command=openFileBrowser)
+fileBrowse.pack(side="right")
 
-def save_text():
-    text_content = text_editor.get("1.0", tk.END)
-    with open("sample.txt", "w") as file:
-        file.write(text_content)
+textEditor = tk.Text(root, height=16, width=60)
+textEditor.pack()
 
-save_button = ttk.Button(root, text="Lagre", width=29, command=save_text)
-save_button.pack(side="right")
+def saveText():
+    file = fileSelect.get()
+    textContent = textEditor.get("1.0", tk.END)
+    with open(f"selectedDir/{file}", "w") as f:
+        f.write(textContent)
 
-exit_button = ttk.Button(root, text="Lukk", width=29, command=root.destroy)
-exit_button.pack(side="left")
+saveButton = ttk.Button(root, text="Lagre", width=29, command=saveText)
+saveButton.pack(side="right")
 
-root.title("BEoT") # Budget Editor of Text
+exitButton = ttk.Button(root, text="Lukk", width=29, command=root.destroy)
+exitButton.pack(side="left")
+
+def setWindowTitle():
+    filepath = __file__
+    pathComponents = filepath.split(os.sep)
+
+    lastFolders = os.path.join(*pathComponents[-4:-1])
+    fileName = os.path.basename(filepath)
+    modTitle = lastFolders + os.sep + fileName
+
+    maxLength = 30
+    if len(modTitle) > maxLength:
+        sepCount = max(len(pathComponents), 1)
+        truncatedPath = os.path.join(*pathComponents[:maxLength // sepCount])
+        truncatedFile = filepath.split(os.sep)[-1]
+        winTitle = truncatedPath + os.sep + truncatedFile
+
+    winTitle = str(winTitle + " - Budget Editor of Text")
+    root.title(winTitle) # Budget Editor of Text
+
+setWindowTitle()
 root.resizable(False, False)
 root.mainloop()
